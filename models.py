@@ -20,13 +20,12 @@ class MSGDN(nn.Module):
         self.label_embed = LabelEmbed(256)
         self.group_embed = GroupEmbed(self.num_node)
 
-        # build Projection Matrix P
+        # build Projection P
         self.ProjectM = nn.ModuleList()
         self.ProjectM.append(nn.Conv2d(512, self.label_dim, 1, 1))
         self.ProjectM.append(nn.Conv2d(1024, self.label_dim, 1, 1))
         self.ProjectM.append(nn.Conv2d(2048, self.label_dim, 1, 1))
 
-        self.ProjectMs = nn.Linear(self.label_dim, self.label_dim)
         self.fc_label = nn.Linear(300, 256)
 
         self.fc1 = nn.Linear(self.num_branch * self.label_dim * (self.num_classes + self.num_node), 2048)
@@ -41,7 +40,6 @@ class MSGDN(nn.Module):
 
     def forward(self, img, inp):
         t = 0.4
-        # t = random.uniform(0.01, 0.4)
         _adj = gen_A(self.num_classes, t, self.adj_file)
         self.A = torch.from_numpy(_adj).float().cuda()
         adj = gen_adj(self.A).detach()
@@ -82,7 +80,6 @@ class MSGDN(nn.Module):
             # Cross Modality
             sl, sg = torch.mul(p_feat, trans_label_feat), torch.mul(p_feat,
                                                                     trans_group_feat)  # [batch_size, w, h, 20,30], [batch_size, w, h, 4,30]
-            # sl, sg = self.cos(p_feat_l, trans_label_feat), self.cos(p_feat_g, trans_group_feat)  # [batch_size, w, h, 20], [batch_size, w, h, 4]
             # Normalization
             sl = sl.contiguous().view(self.batch_size, w * h, self.num_classes, self.label_dim)
             sg = sg.contiguous().view(self.batch_size, w * h, self.num_node, self.label_dim)
@@ -137,7 +134,6 @@ class MSGDN(nn.Module):
             {'params': self.label_embed.parameters(), 'lr': lr},
             {'params': self.group_embed.parameters(), 'lr': lr},
             {'params': self.ProjectM.parameters(), 'lr': lr},
-            {'params': self.ProjectMs.parameters(), 'lr': lr},
             {'params': self.fc_label.parameters(), 'lr': lr},
             {'params': self.fc1.parameters(), 'lr': lr},
             {'params': self.fc2.parameters(), 'lr': lr},

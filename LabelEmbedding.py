@@ -1,11 +1,10 @@
-import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
 
-# This file compute graph data and group embedding
 class GraphAttentionLayer(nn.Module):
+    # Graph Attention Network
     def __init__(self, in_features, out_features, dropout=0, alpha=0.2):
         super(GraphAttentionLayer, self).__init__()
         self.dropout = dropout
@@ -37,6 +36,7 @@ class GraphAttentionLayer(nn.Module):
 
 
 class BatchedDiffPool(nn.Module):
+    # Diffpool
     def __init__(self, nfeat, nnext, nhid, is_final=False):
         super(BatchedDiffPool, self).__init__()
         self.is_final = is_final
@@ -57,8 +57,7 @@ class BatchedDiffPool(nn.Module):
 
 
 class LabelEmbed(nn.Module):
-    # input is one hot embed of class c, size: 1 x num_classes
-    # return dimension:512
+    # Generate label embeddings
     def __init__(self, input_size):
         super().__init__()
         self.label_dim = 512
@@ -71,27 +70,22 @@ class LabelEmbed(nn.Module):
     def forward(self, x, adj):
         for layer in self.layers:
             x = layer(x, adj)
-        # x = x * mask
-        # readout_x = x.sum(dim=1)
         return x
 
 
 class GroupEmbed(nn.Module):
+    # Generate group embeddings
     def __init__(self, pool_size):
         super().__init__()
         self.label_dim = 512
         self.layers = nn.ModuleList([
             BatchedDiffPool(self.label_dim, pool_size, self.label_dim),
         ])
-        # writer.add_text(str(vars(self)))
 
     def forward(self, x, adj):
         for layer in self.layers:
             if isinstance(layer, GraphAttentionLayer):
                 x = layer(x, adj)
             elif isinstance(layer, BatchedDiffPool):
-                x, adj, assign_mat = layer(x, adj)  # torch.Size([4, 30]) torch.Size([4, 4]) torch.Size([20, 4])
-
-        # x = x * mask
-        # readout_x = x.sum(dim=1)
+                x, adj, assign_mat = layer(x, adj)
         return x, assign_mat

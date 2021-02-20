@@ -38,7 +38,7 @@ of [MULTI-LAYERED SEMANTIC REPRESENTATION NETWORK FOR MULTI-LABEL IMAGE CLASSIFI
 </table>
 </p>
 
-## Preparing for running the project
+## Preparing for running the code
 
 ### 1. Requirements
 
@@ -91,7 +91,10 @@ or
 
 [Baidu](https://pan.baidu.com/s/1jgaSxURuxR1Z3AV_-hJ-KA 提取码：1qes )
 
+## Run the code
+
 ### Options
+
 - `lr`: learning rate
 - `batch-size`: number of images per batch
 - `image-size`: size of the image
