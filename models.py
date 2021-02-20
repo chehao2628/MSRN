@@ -1,20 +1,10 @@
-import torch
 import torch.nn as nn
-import torch.nn.functional as F
-import torchvision
 from torch.autograd import Variable
-from torch.nn.parameter import Parameter
-import random
-import pickle
-import os
-import numpy as np
 from util import *
 
 from ResNet import resnet101
 from LabelEmbedding import LabelEmbed, GroupEmbed
 
-
-# from LabelEmbedModule.DataLoader import *
 
 class MSGDN(nn.Module):
     def __init__(self, num_classes, pool_ratio, model_name, adj_file):
@@ -41,6 +31,10 @@ class MSGDN(nn.Module):
 
         self.fc1 = nn.Linear(self.num_branch * self.label_dim * (self.num_classes + self.num_node), 2048)
         self.fc2 = nn.Linear(2048, self.num_classes)
+
+        self.W = nn.Parameter(torch.Tensor(self.num_classes, self.num_branch * self.label_dim * 2), requires_grad=True)
+        self.B = nn.Parameter(torch.Tensor(self.num_classes), requires_grad=True)
+        self.reset_parameters()
 
         self.image_normalization_mean = [0.485, 0.456, 0.406]
         self.image_normalization_std = [0.229, 0.224, 0.225]
@@ -103,14 +97,39 @@ class MSGDN(nn.Module):
             label_dr = torch.cat((label_dr, agg_l_feat), -1)  # batch_size x (n*channel) x num_classes
             group_dr = torch.cat((group_dr, agg_g_feat), -1)  # batch_size x (n*channel) x num_node
 
+        ###################################################################################################
+        # comment this block and uncomment the next block if applying element wise predict
         # concat and predict
         connected = torch.cat((label_dr, group_dr), 1)  # batch_size x (n*channel) x (num_node+num_classes)
         connected = torch.tanh(connected)
         connected = connected.view(self.batch_size, -1)
+
         # MLP
         res = F.leaky_relu(self.fc1(connected))
         res = self.fc2(res)
+        ###################################################################################################
+
+        ###################################################################################################
+        # group_dr = group_dr.permute(0, 2, 1)
+        # group_dr = torch.matmul(group_dr, assign_mat.permute(1, 0))
+        # group_dr = group_dr.permute(0, 2, 1)
+        #
+        # connected = torch.cat((label_dr, group_dr), 2)  # batch_size x (n) x (num_node+num_classes)
+        # connected = torch.tanh(connected)
+        #
+        # res = torch.sum(self.W * connected, 2)
+        # res = res + self.B
+        ###################################################################################################
+
         return res, group_loss
+
+    def reset_parameters(self):
+        stdv = 1. / math.sqrt(self.W.size(1))
+        for i in range(self.num_classes):
+            self.W[i].data.uniform_(-stdv, stdv)
+        if self.B is not None:
+            for i in range(self.num_classes):
+                self.B[i].data.uniform_(-stdv, stdv)
 
     def get_config_optim(self, lr):
         return [
