@@ -274,26 +274,32 @@ class AveragePrecisionMeter(object):
     def evaluation(self, scores_, targets_):
         n, n_class = scores_.shape
         Nc, Np, Ng = np.zeros(n_class), np.zeros(n_class), np.zeros(n_class)
-        for k in range(n_class):
-            scores = scores_[:, k]
-            targets = targets_[:, k]
-            targets[targets == -1] = 0
-            Ng[k] = np.sum(targets == 1)
-            Np[k] = np.sum(scores >= 0)
-            Nc[k] = np.sum(targets * (scores >= 0))
-        Np[Np == 0] = 1
-        OP = np.sum(Nc) / np.sum(Np)
-        OR = np.sum(Nc) / np.sum(Ng)
-        OF1 = (2 * OP * OR) / (OP + OR)
+        threshold = [x * 0.1 + -1 for x in range(20)]
+        r_OP, r_OR, r_OF1, r_CP, r_CR, r_CF1 = 0, 0, 0, 0, 0, 0
+        for t in threshold:
+            for k in range(n_class):
+                scores = scores_[:, k]
+                targets = targets_[:, k]
+                targets[targets == -1] = 0
+                Ng[k] = np.sum(targets == 1)
+                Np[k] = np.sum(scores >= t)
+                Nc[k] = np.sum(targets * (scores >= t))
+            Np[Np == 0] = 1
+            OP = np.sum(Nc) / np.sum(Np)
+            OR = np.sum(Nc) / np.sum(Ng)
+            OF1 = (2 * OP * OR) / (OP + OR)
 
-        CP = np.sum(Nc / Np) / n_class
-        CR = np.sum(Nc / Ng) / n_class
-        CF1 = (2 * CP * CR) / (CP + CR)
+            CP = np.sum(Nc / Np) / n_class
+            CR = np.sum(Nc / Ng) / n_class
+            CF1 = (2 * CP * CR) / (CP + CR)
+
+            if CF1 + OF1 > r_CF1 + r_OF1:
+                r_OP, r_OR, r_OF1, r_CP, r_CR, r_CF1 = OP, OR, OF1, CP, CR, CF1
 
         ce = metric.coverage_error(targets_, scores_)
         lrap = metric.label_ranking_average_precision_score(targets_, scores_)
         lrl = metric.label_ranking_loss(targets_, scores_)
-        return OP, OR, OF1, CP, CR, CF1, ce, lrap, lrl
+        return r_OP, r_OR, r_OF1, r_CP, r_CR, r_CF1, ce, lrap, lrl
 
 
 def gen_A(num_classes, t, adj_file):
