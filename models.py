@@ -137,4 +137,6 @@ class MSGDN(nn.Module):
             {'params': self.fc_label.parameters(), 'lr': lr},
             {'params': self.fc1.parameters(), 'lr': lr},
             {'params': self.fc2.parameters(), 'lr': lr},
+            {'params': self.W, 'lr': lr},
+            {'params': self.B, 'lr': lr},
         ]
