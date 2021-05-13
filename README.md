@@ -113,13 +113,13 @@ python3 demo_voc2007_gcn.py data/voc --image-size 448 --batch-size 24 -e --resum
 python3 demo_coco_gcn.py data/coco --image-size 448 --batch-size 12 -e --resume checkpoint/coco/coco_checkpoint.pth.tar
 ```
 
-### Demo NUS-WIDE 2014
+### Demo NUS-WIDE
 
 ```
 python3 demo_coco_gcn.py data/coco --image-size 448 --batch-size 12 -e --resume checkpoint/nuswide/nuswide_checkpoint.pth.tar
 ```
 
-### Demo Apparel 2014
+### Demo Apparel
 
 ```
 python3 demo_apparel_gcn.py data/coco --image-size 448 --batch-size 12 -e --resume checkpoint/apparel/apparel_checkpoint.pth.tar
