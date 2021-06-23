@@ -1,7 +1,7 @@
 # MSRN.pytorch
 
 Official PyTorch Implementation
-of [MULTI-LAYERED SEMANTIC REPRESENTATION NETWORK FOR MULTI-LABEL IMAGE CLASSIFICATION](https://arxiv.org/......).
+of [MULTI-LAYERED SEMANTIC REPRESENTATION NETWORK FOR MULTI-LABEL IMAGE CLASSIFICATION](https://arxiv.org/abs/2106.11596).
 
 **Abstract**
 > Multi-label image classification (MLIC) is a fundamental and
