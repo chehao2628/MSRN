@@ -4,11 +4,11 @@ from models import *
 from DataLoader.voc import *
 
 parser = argparse.ArgumentParser(description='WILDCAT Training')
-parser.add_argument('data', metavar='DIR',
+parser.add_argument('--data', '-d', default='/hy-tmp/VOC2007', type=str, metavar='DIR',
                     help='path to dataset (e.g. data/')
-parser.add_argument('--image-size', '-i', default=224, type=int,
-                    metavar='N', help='image size (default: 224)')
-parser.add_argument('-j', '--workers', default=4, type=int, metavar='N',
+parser.add_argument('--image-size', '-i', default=448, type=int,
+                    metavar='N', help='image size (default: 448)')
+parser.add_argument('-j', '--workers', default=24, type=int, metavar='N',
                     help='number of data loading workers (default: 4)')
 parser.add_argument('--epochs', default=20, type=int, metavar='N',
                     help='number of total epochs to run')
@@ -20,7 +20,7 @@ parser.add_argument('-graph_file', default='./data/voc/voc_adj.pkl', type=str, m
                     help='path to graph (default: none)')
 parser.add_argument('-word_file', default='./data/voc/voc_glove_word2vec.pkl', type=str, metavar='PATH',
                     help='path to word (default: none)')
-parser.add_argument('-b', '--batch-size', default=16, type=int,
+parser.add_argument('-b', '--batch-size', default=24, type=int,
                     metavar='N', help='mini-batch size (default: 256)')
 parser.add_argument('--lr', '--learning-rate', default=0.1, type=float,
                     metavar='LR', help='initial learning rate')
@@ -80,7 +80,7 @@ def main_voc2007():
     if args.evaluate:
         state['evaluate'] = True
     engine = GCNMultiLabelMAPEngine(state)
-    engine.learning(model, criterion, train_dataset, val_dataset, optimizer)
+    engine.learning(model, critrion, train_dataset, val_dataset, optimizer)
 
 
 if __name__ == '__main__':

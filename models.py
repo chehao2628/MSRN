@@ -1,6 +1,7 @@
 import torch.nn as nn
 from torch.autograd import Variable
 from util import *
+import torch.nn.functional as F
 
 from ResNet import resnet101
 from LabelEmbedding import LabelEmbed, GroupEmbed

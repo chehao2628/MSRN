@@ -118,6 +118,10 @@ class ResNet(nn.Module):
         self.pool2 = nn.MaxPool2d(2, stride=2)
         self.pool3 = nn.MaxPool2d(2, stride=2)
 
+        # self.pool1 = nn.AdaptiveMaxPool2d((7, 7))
+        # self.pool2 = nn.AdaptiveMaxPool2d((7, 7))
+        # self.pool3 = nn.AdaptiveMaxPool2d((7, 7))
+
         # self.avgpool2 = nn.AvgPool2d(avg_pool_kernel_size, stride=1)
         # self.fc = nn.Linear(8192, num_classes)
         self.conv_buffer0 = nn.Conv2d(256, 256, kernel_size=1, stride=1)

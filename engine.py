@@ -10,16 +10,9 @@ import torchvision.transforms as transforms
 import torch.nn as nn
 from util import *
 from torch.autograd import Variable
-from prefetch_generator import BackgroundGenerator
-
-
-class DataLoaderX(torch.utils.data.DataLoader):
-    def __iter__(self):
-        return BackgroundGenerator(super().__iter__())
-
+from randaugment import RandAugment
 
 tqdm.monitor_interval = 0
-
 
 class Engine(object):
     def __init__(self, state={}):
@@ -147,8 +140,10 @@ class Engine(object):
             normalize = transforms.Normalize(mean=model.image_normalization_mean,
                                              std=model.image_normalization_std)
             self.state['train_transform'] = transforms.Compose([
-                MultiScaleCrop(self.state['image_size'], scales=(1.0, 0.9, 0.8, 0.7, 0.6), max_distort=2),
-                transforms.RandomHorizontalFlip(),
+                # MultiScaleCrop(self.state['image_size'], scales=(1.0, 0.9, 0.8, 0.7, 0.6), max_distort=2),
+                transforms.Resize((self.state['image_size'], self.state['image_size'])),
+                CutoutPIL(0.5),
+                RandAugment(),
                 transforms.ToTensor(),
                 normalize,
             ])
@@ -175,13 +170,13 @@ class Engine(object):
         val_dataset.target_transform = self._state('val_target_transform')
 
         # data loading code
-        train_loader = DataLoaderX(train_dataset,
-                                   batch_size=self.state['batch_size'], shuffle=True,
-                                   num_workers=self.state['workers'])
+        train_loader = torch.utils.data.DataLoader(train_dataset,
+                                                   batch_size=self.state['batch_size'], shuffle=True,
+                                                   num_workers=self.state['workers'])
 
-        val_loader = DataLoaderX(val_dataset,
-                                 batch_size=self.state['batch_size'], shuffle=False,
-                                 num_workers=self.state['workers'])
+        val_loader = torch.utils.data.DataLoader(val_dataset,
+                                                 batch_size=self.state['batch_size'], shuffle=False,
+                                                 num_workers=self.state['workers'])
 
         # optionally resume from a checkpoint
         if self._state('resume') is not None:
@@ -210,7 +205,8 @@ class Engine(object):
             return
 
         self.state['start_epoch'] = 0
-        self.state['max_epochs'] = 200
+        # self.state['max_epochs'] = 200
+        self.state['max_epochs'] = self.state['epoch_step'][-1] * 2 - self.state['epoch_step'][-2]
 
         for epoch in range(self.state['start_epoch'], self.state['max_epochs']):
             self.state['epoch'] = epoch
